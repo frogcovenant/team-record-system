@@ -6,6 +6,7 @@ import { defineConfig } from "vite"
 // https://ui.shadcn.com/docs/installation/vite
 export default defineConfig({
   plugins: [react()],
+  base: './', // This ensures relative paths. Needed for GitHub Pages deploys.
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
