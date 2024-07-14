@@ -9,7 +9,6 @@ Currently, two official plugins are available:
 
 # Todo List
 
-- Fix icon not loading on Github Pages
 - Fix eslint errors (mainly set up rules so that anything from shadcn is excluded)
 - Add pre-commit hook to check eslint
 - Build MVP
