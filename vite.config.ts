@@ -6,7 +6,7 @@ import { defineConfig } from "vite"
 // https://ui.shadcn.com/docs/installation/vite
 export default defineConfig({
   plugins: [react()],
-  base: '/plex-helper-react-ui/',
+  base: '/team-record-system/',
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
