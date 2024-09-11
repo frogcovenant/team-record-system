@@ -1,7 +1,12 @@
+import Teams from './components/Teams';
+import TeamSelector from './components/TeamSelector';
+import './App.css';
+
 export default function App() {
 	return (
-	<div>
-		Nothing here
-	</div>
-	)
+		<div className='main-page'>
+			<TeamSelector/>
+			<Teams/>
+		</div>
+	);
 }
