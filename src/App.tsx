@@ -35,6 +35,8 @@ export default function App() {
 				});
 			}
 
+			// Sort the team list info alphabetically by judge name
+			listInfo.sort((a, b) => a.judge.localeCompare(b.judge));
 			setTeamListInfo(listInfo);
 			setTeamOptions(teams.map((team) => team.teamName));
 		}
@@ -69,21 +71,11 @@ export default function App() {
 				(teamName) => teams.find((team) => team.teamName === teamName)?.schoolName === selectedTeam.schoolName
 			).length;
 
-			// First sort by the total number of teams
-			if (teamListA.teams.length < teamListB.teams.length) {
-				return -1;
-			}
-			if (teamListA.teams.length > teamListB.teams.length) {
-				return 1;
-			}
+			if (teamListA.teams.length < teamListB.teams.length) return -1;
+			if (teamListA.teams.length > teamListB.teams.length) return 1;
 
-			// If equal, then sort by the number of teams from the same school (fewer first)
-			if (teamsFromSameSchoolA < teamsFromSameSchoolB) {
-				return -1;
-			}
-			if (teamsFromSameSchoolA > teamsFromSameSchoolB) {
-				return 1;
-			}
+			if (teamsFromSameSchoolA < teamsFromSameSchoolB) return -1;
+			if (teamsFromSameSchoolA > teamsFromSameSchoolB) return 1;
 
 			return 0;
 		});
@@ -91,13 +83,75 @@ export default function App() {
 		// Add the selected team to the list that has the least number of teams from the same school
 		teamListInfoSortedByAvailability[0].teams.push(selectedTeamName);
 
+		// Sort the team list info alphabetically by judge name
+		teamListInfoSortedByAvailability.sort((a, b) => a.judge.localeCompare(b.judge));
+
 		// Update state and trigger localStorage save via useEffect
 		setTeamListInfo(teamListInfoSortedByAvailability);
+		setTeamOptions(teamOptions.filter((team) => team !== selectedTeamName));
+	}
 
-		// Remove the selected team from the options list
-		setTeamOptions(
-			teamOptions.filter((team) => team !== selectedTeamName)
+	// TODO: refactor this function and move re-usable code here and in handleSelectTeam()
+	function handleDeleteTeam(judgeIndex: number, teamName: string): void {
+		// Remove the deleted team from the current judge's list
+		const updatedTeamListInfo = [...teamListInfo];
+		updatedTeamListInfo[judgeIndex].teams = updatedTeamListInfo[judgeIndex].teams.filter(
+			(team) => team !== teamName
 		);
+	
+		// Add the deleted team back to the general team options list
+		const teamToReAdd = teams.find((team: Team) => team.teamName === teamName);
+		if (!teamToReAdd) {
+			console.log('Team not found');
+			return;
+		}
+	
+		// Re-add the deleted team to the team options list
+		const updatedTeamOptions = [...teamOptions, teamToReAdd.teamName];
+	
+		// Remove all teams from the judges' lists for rebalancing
+		const allTeams = updatedTeamListInfo.flatMap(judgeList => judgeList.teams);
+	
+		// Reset the teams in all judges' lists
+		updatedTeamListInfo.forEach(judgeList => judgeList.teams = []);
+	
+		// Rebalance the teams
+		const balancedTeamListInfo = [...updatedTeamListInfo];  // Make a copy
+		const updatedAllTeams = [...allTeams];  // Combine the re-added team with all other teams
+	
+		// Sort the teams and reassign them one by one
+		updatedAllTeams.forEach((teamName) => {
+			const selectedTeam = teams.find((team: Team) => team.teamName === teamName);
+			if (selectedTeam === undefined) return;
+	
+			// Sort the judge lists by least number of teams and then by teams from the same school
+			balancedTeamListInfo.sort((teamListA, teamListB) => {
+				const teamsFromSameSchoolA = teamListA.teams.filter(
+					(name) => teams.find((team) => team.teamName === name)?.schoolName === selectedTeam.schoolName
+				).length;
+				const teamsFromSameSchoolB = teamListB.teams.filter(
+					(name) => teams.find((team) => team.teamName === name)?.schoolName === selectedTeam.schoolName
+				).length;
+	
+				if (teamListA.teams.length < teamListB.teams.length) return -1;
+				if (teamListA.teams.length > teamListB.teams.length) return 1;
+	
+				if (teamsFromSameSchoolA < teamsFromSameSchoolB) return -1;
+				if (teamsFromSameSchoolA > teamsFromSameSchoolB) return 1;
+	
+				return 0;
+			});
+	
+			// Add the team to the judge's list with the least teams
+			balancedTeamListInfo[0].teams.push(teamName);
+		});
+
+		// Sort the balanced team list info alphabetically by judge name
+		balancedTeamListInfo.sort((a, b) => a.judge.localeCompare(b.judge));
+	
+		// Update the state and local storage
+		setTeamListInfo(balancedTeamListInfo);
+		setTeamOptions(updatedTeamOptions);
 	}
 
 	return (
@@ -108,6 +162,7 @@ export default function App() {
 			/>
 			<Teams
 				teamListInfo={teamListInfo}
+				onDeleteTeam={handleDeleteTeam}
 			/>
 		</div>
 	);

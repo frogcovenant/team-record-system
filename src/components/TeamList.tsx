@@ -3,6 +3,7 @@ import './TeamList.css';
 export interface TeamListProps {
 	teams: string[];
 	judge: string;
+	onDeleteTeam?: (teamName: string) => void;
 }
 
 export default function TeamList(props: TeamListProps) {
@@ -14,7 +15,10 @@ export default function TeamList(props: TeamListProps) {
 			<div>
 				<ul>
 					{props.teams.map((team, index) => (
-						<li key={index}>{team}</li>
+						<li key={index}>
+							{team}
+							<button onClick={() => props.onDeleteTeam?.(team)}>X</button>
+						</li>
 					))}
 				</ul>
 			</div>
