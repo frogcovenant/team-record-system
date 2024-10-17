@@ -1,3 +1,18 @@
 .team-list {
     width: 15vw;
 }
+
+.team-list ol li {
+    position: relative;
+    padding-right: 16px;
+    padding: 10px;
+    border: 1px solid lightgrey;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.delete-team-button {
+    position: absolute;
+    right: 0;
+    top: 0;
+}

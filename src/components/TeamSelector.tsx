@@ -29,7 +29,7 @@ export default function TeamSelector(props: TeamSelectorProps) {
 
     return (
         <div className='team-selector'>
-            <h6>Nombre del equipo</h6>
+            <h2>Nombre del equipo</h2>
             <input 
                 type="text"
                 list="team-options"
