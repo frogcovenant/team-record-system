@@ -109,48 +109,11 @@ export default function App() {
 		// Re-add the deleted team to the team options list
 		const updatedTeamOptions = [...teamOptions, teamToReAdd.teamName];
 	
-		// Remove all teams from the judges' lists for rebalancing
-		const allTeams = updatedTeamListInfo.flatMap(judgeList => judgeList.teams);
-	
-		// Reset the teams in all judges' lists
-		updatedTeamListInfo.forEach(judgeList => judgeList.teams = []);
-	
-		// Rebalance the teams
-		const balancedTeamListInfo = [...updatedTeamListInfo];  // Make a copy
-		const updatedAllTeams = [...allTeams];  // Combine the re-added team with all other teams
-	
-		// Sort the teams and reassign them one by one
-		updatedAllTeams.forEach((teamName) => {
-			const selectedTeam = teams.find((team: Team) => team.teamName === teamName);
-			if (selectedTeam === undefined) return;
-	
-			// Sort the judge lists by least number of teams and then by teams from the same school
-			balancedTeamListInfo.sort((teamListA, teamListB) => {
-				const teamsFromSameSchoolA = teamListA.teams.filter(
-					(name) => teams.find((team) => team.teamName === name)?.schoolName === selectedTeam.schoolName
-				).length;
-				const teamsFromSameSchoolB = teamListB.teams.filter(
-					(name) => teams.find((team) => team.teamName === name)?.schoolName === selectedTeam.schoolName
-				).length;
-	
-				if (teamListA.teams.length < teamListB.teams.length) return -1;
-				if (teamListA.teams.length > teamListB.teams.length) return 1;
-	
-				if (teamsFromSameSchoolA < teamsFromSameSchoolB) return -1;
-				if (teamsFromSameSchoolA > teamsFromSameSchoolB) return 1;
-	
-				return 0;
-			});
-	
-			// Add the team to the judge's list with the least teams
-			balancedTeamListInfo[0].teams.push(teamName);
-		});
-
-		// Sort the balanced team list info alphabetically by judge name
-		balancedTeamListInfo.sort((a, b) => a.judge.localeCompare(b.judge));
+		// Sort the team list info alphabetically by judge name
+		updatedTeamListInfo.sort((a, b) => a.judge.localeCompare(b.judge));
 	
 		// Update the state and local storage
-		setTeamListInfo(balancedTeamListInfo);
+		setTeamListInfo(updatedTeamListInfo);
 		setTeamOptions(updatedTeamOptions);
 	}
 
