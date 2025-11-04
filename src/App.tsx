@@ -17,6 +17,8 @@ export default function App() {
 
 	// Load state from local storage on mount
 	useEffect(() => {
+		const NAMES_OF_JUDGES = ['A', 'B', 'C', 'D'];
+
 		// Retrieve stored team options and team list info from localStorage
 		const storedTeamOptions = localStorage.getItem(LOCAL_STORAGE_KEY_TEAMS);
 		const storedTeamListInfo = localStorage.getItem(LOCAL_STORAGE_KEY_LIST);
@@ -30,7 +32,7 @@ export default function App() {
 			const listInfo: TeamListProps[] = [];
 			for (let i = 0; i < NUMBER_OF_JUDGES; i++) {
 				listInfo.push({
-					judge: `Juez ${i + 1}`,
+					judge: `Juez ${NAMES_OF_JUDGES[i]}`,
 					teams: [],
 				});
 			}
