@@ -38,7 +38,7 @@ export default function TeamSelector(props: TeamSelectorProps) {
                 placeholder="Selecciona o escribe un equipo"
             />
             <datalist id="team-options">
-                {props.teamOptions.map((value, index) => {
+                {[...props.teamOptions].sort().map((value, index) => {
                     return (
                         <option key={index} value={value}></option>  
                     )
