@@ -13,6 +13,8 @@ export default function Teams(props: TeamsProps) {
 				<TeamList
 					judge={teamListInfo.judge}
 					teams={teamListInfo.teams}
+					judgeNumber={index}
+					maxJudgeNumber={teamListInfo.maxJudgeNumber}
 					key={index}
 					onDeleteTeam={(teamName) => props.onDeleteTeam(index, teamName)}
 				/>

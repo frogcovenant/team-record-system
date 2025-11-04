@@ -34,6 +34,8 @@ export default function App() {
 				listInfo.push({
 					judge: `Juez ${NAMES_OF_JUDGES[i]}`,
 					teams: [],
+					judgeNumber: NaN,
+					maxJudgeNumber: NUMBER_OF_JUDGES,
 				});
 			}
 
