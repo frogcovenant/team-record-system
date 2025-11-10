@@ -57,12 +57,17 @@ export default function App() {
 	}, [teamOptions, teamListInfo]);
 
 	function handleSelectTeam(teamIndex: number): void {
-		const selectedTeamName = teamOptions[teamIndex];
-		const selectedTeam = teams.find((team: Team) => team.teamName === selectedTeamName);
+		let selectedTeamName = teamOptions[teamIndex];
+		let selectedTeam = teams.find((team: Team) => team.teamName === selectedTeamName);
 
 		if (selectedTeam === undefined) {
-			console.log("Team name not found");
-			return;
+			// Create blank team if nothing was selected
+			// TODO: find a better way to identify this blank other than current timestamp
+			selectedTeam = {
+				teamName: 'Vacio',
+				schoolName: Date.now().toString(),
+			};
+			selectedTeamName =  Date.now().toString();
 		}
 
 		// Sort the team lists by the number of teams, then by the number of teams from the same school.
@@ -105,20 +110,17 @@ export default function App() {
 	
 		// Add the deleted team back to the general team options list
 		const teamToReAdd = teams.find((team: Team) => team.teamName === teamName);
-		if (!teamToReAdd) {
-			console.log('Team not found');
-			return;
+		if (teamToReAdd) {
+			// Re-add the deleted team to the team options list
+			const updatedTeamOptions = [...teamOptions, teamToReAdd.teamName];
+			setTeamOptions(updatedTeamOptions);
 		}
-	
-		// Re-add the deleted team to the team options list
-		const updatedTeamOptions = [...teamOptions, teamToReAdd.teamName];
 	
 		// Sort the team list info alphabetically by judge name
 		updatedTeamListInfo.sort((a, b) => a.judge.localeCompare(b.judge));
 	
 		// Update the state and local storage
 		setTeamListInfo(updatedTeamListInfo);
-		setTeamOptions(updatedTeamOptions);
 	}
 
 	return (
