@@ -4,7 +4,7 @@ import './TeamSelector.css';
 
 interface TeamSelectorProps {
     teamOptions: string[];
-    onSelectTeam: (teamIndex: number, position?: number) => void; // updated to accept position
+    onSelectTeam: (teamIndex: number, position?: number) => void;
 }
 
 export default function TeamSelector(props: TeamSelectorProps) {
