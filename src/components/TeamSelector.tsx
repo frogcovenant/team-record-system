@@ -15,16 +15,10 @@ export default function TeamSelector(props: TeamSelectorProps) {
     };
 
     const handleButtonClick = () => {
-        // Find the index of the selected team in the teamOptions array
-        const teamIndex = props.teamOptions.indexOf(selectedValue);
-
-        if (teamIndex !== -1) {
-            props.onSelectTeam(teamIndex);
-            // Clear the input field after the team is selected
-            setSelectedValue('');
-        } else {
-            console.log("Team not found or invalid input");
-        }
+        // Find the index of the selected team in the teamOptions array, if team is not found then add a blank
+        props.onSelectTeam(props.teamOptions.indexOf(selectedValue));
+        // Clear the input field after the team is selected
+        setSelectedValue('');
     };
 
     return (
