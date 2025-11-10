@@ -56,70 +56,93 @@ export default function App() {
 		}
 	}, [teamOptions, teamListInfo]);
 
-	function handleSelectTeam(teamIndex: number): void {
+	// TODO: clean up this
+	function handleSelectTeam(teamIndex: number, position?: number): void {
 		let selectedTeamName = teamOptions[teamIndex];
 		let selectedTeam = teams.find((team: Team) => team.teamName === selectedTeamName);
 
 		if (selectedTeam === undefined) {
-			// Create blank team if nothing was selected
-			// TODO: find a better way to identify this blank other than current timestamp
+			// If no team is selected, add a blocked slot
 			selectedTeam = {
-				teamName: 'Vacio',
-				schoolName: Date.now().toString(),
+				teamName: 'BLOQUEADO',
+				schoolName: '',
 			};
-			selectedTeamName =  Date.now().toString();
+			selectedTeamName = 'BLOQUEADO';
 		}
 
-		// Sort the team lists by the number of teams, then by the number of teams from the same school.
-		const teamListInfoSortedByAvailability = [...teamListInfo];
-		teamListInfoSortedByAvailability.sort((teamListA, teamListB) => {
-			const teamsFromSameSchoolA = teamListA.teams.filter(
-				(teamName) => teams.find((team) => team.teamName === teamName)?.schoolName === selectedTeam.schoolName
-			).length;
-			const teamsFromSameSchoolB = teamListB.teams.filter(
-				(teamName) => teams.find((team) => team.teamName === teamName)?.schoolName === selectedTeam.schoolName
-			).length;
+		const teamListInfoSortedByAvailability = [...teamListInfo].map(judgeInfo => ({
+			...judgeInfo,
+			teams: judgeInfo.teams.map(t => typeof t === 'string' ? { name: t, manualPosition: false } : t)
+		}));
+		let teamInserted = false;
 
-			if (teamListA.teams.length < teamListB.teams.length) return -1;
-			if (teamListA.teams.length > teamListB.teams.length) return 1;
+		if (position && position > 0) {
+			const judgeIndex = (position - 1) % teamListInfoSortedByAvailability.length;
+			const teamIndexInJudge = Math.floor((position - 1) / teamListInfoSortedByAvailability.length);
+			const teamsArr = teamListInfoSortedByAvailability[judgeIndex].teams;
+			while (teamsArr.length <= teamIndexInJudge) {
+				teamsArr.push({ name: '', manualPosition: false });
+			}
+			if (teamsArr[teamIndexInJudge].name === '') {
+				const isBlocked = selectedTeamName === 'BLOQUEADO';
+				teamsArr[teamIndexInJudge] = { name: selectedTeamName, manualPosition: isBlocked ? true : true };
+				teamInserted = true;
+			}
+		} else {
+			// Only count non-empty slots for balancing
+			teamListInfoSortedByAvailability.sort((teamListA, teamListB) => {
+				const validTeamsA = teamListA.teams.filter(t => t.name !== '');
+				const validTeamsB = teamListB.teams.filter(t => t.name !== '');
+				const teamsFromSameSchoolA = validTeamsA.filter(
+					(teamObj) => teams.find((team) => team.teamName === teamObj.name)?.schoolName === selectedTeam.schoolName
+				).length;
+				const teamsFromSameSchoolB = validTeamsB.filter(
+					(teamObj) => teams.find((team) => team.teamName === teamObj.name)?.schoolName === selectedTeam.schoolName
+				).length;
 
-			if (teamsFromSameSchoolA < teamsFromSameSchoolB) return -1;
-			if (teamsFromSameSchoolA > teamsFromSameSchoolB) return 1;
+				if (validTeamsA.length < validTeamsB.length) return -1;
+				if (validTeamsA.length > validTeamsB.length) return 1;
 
-			return 0;
-		});
+				if (teamsFromSameSchoolA < teamsFromSameSchoolB) return -1;
+				if (teamsFromSameSchoolA > teamsFromSameSchoolB) return 1;
 
-		// Add the selected team to the list that has the least number of teams from the same school
-		teamListInfoSortedByAvailability[0].teams.push(selectedTeamName);
+				return 0;
+			});
+			const teamsArr = teamListInfoSortedByAvailability[0].teams;
+			const emptyIndex = teamsArr.findIndex(t => t.name === '' && !t.manualPosition);
+			if (emptyIndex !== -1) {
+				teamsArr[emptyIndex] = { name: selectedTeamName, manualPosition: false };
+			} else {
+				teamsArr.push({ name: selectedTeamName, manualPosition: false });
+			}
+			teamInserted = true;
+		}
 
-		// Sort the team list info alphabetically by judge name
 		teamListInfoSortedByAvailability.sort((a, b) => a.judge.localeCompare(b.judge));
-
-		// Update state and trigger localStorage save via useEffect
-		setTeamListInfo(teamListInfoSortedByAvailability);
-		setTeamOptions(teamOptions.filter((team) => team !== selectedTeamName));
+		if (teamInserted) {
+			setTeamListInfo(teamListInfoSortedByAvailability);
+			setTeamOptions(teamOptions.filter((team) => team !== selectedTeamName));
+		}
 	}
 
-	// TODO: refactor this function and move re-usable code here and in handleSelectTeam()
+	// TODO: clean up this
 	function handleDeleteTeam(judgeIndex: number, teamName: string): void {
-		// Remove the deleted team from the current judge's list
-		const updatedTeamListInfo = [...teamListInfo];
-		updatedTeamListInfo[judgeIndex].teams = updatedTeamListInfo[judgeIndex].teams.filter(
-			(team) => team !== teamName
-		);
-	
-		// Add the deleted team back to the general team options list
+		const updatedTeamListInfo = [...teamListInfo].map(judgeInfo => ({
+			...judgeInfo,
+			teams: judgeInfo.teams.map(t => typeof t === 'string' ? { name: t, manualPosition: false } : t)
+		}));
+		const teamsArr = updatedTeamListInfo[judgeIndex].teams;
+		const teamObjIndex = teamsArr.findIndex(t => t.name === teamName);
+		if (teamObjIndex !== -1) {
+			const manual = teamsArr[teamObjIndex].manualPosition;
+			teamsArr[teamObjIndex] = { name: '', manualPosition: manual };
+		}
 		const teamToReAdd = teams.find((team: Team) => team.teamName === teamName);
 		if (teamToReAdd) {
-			// Re-add the deleted team to the team options list
 			const updatedTeamOptions = [...teamOptions, teamToReAdd.teamName];
 			setTeamOptions(updatedTeamOptions);
 		}
-	
-		// Sort the team list info alphabetically by judge name
 		updatedTeamListInfo.sort((a, b) => a.judge.localeCompare(b.judge));
-	
-		// Update the state and local storage
 		setTeamListInfo(updatedTeamListInfo);
 	}
 
